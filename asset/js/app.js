@@ -194,9 +194,6 @@ function start_appLayerTransaction() {
 		var user_dana = $('input[name=phone_dana]').val();
 		var saldo_dana = $('input[name=saldo_dana]').val();
 
-		saldo_dana = saldo_dana.split("Rp");
-		saldo_dana = saldo_dana[saldo_dana.length -1];
-
 		$('.user_dana').text(user_dana);
 		$('.saldo_dana').text(saldo_dana);
 
@@ -326,9 +323,9 @@ $(document).ready(function(e) {
 
 
 
-	validasi_phoneDana();
 	$('input[name=phone_dana]').val("");
 	$('.max_gift').text( get_number( db_max_gift ) );
+	validasi_phoneDana();
 
 
 });

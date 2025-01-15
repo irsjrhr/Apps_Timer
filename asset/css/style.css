@@ -158,7 +158,12 @@ body{
 	font-size: 17px;
 	cursor: pointer;
 	font-weight: 600;
+	transition: .5s;
 }
+.col_dial:hover{
+	background: rgba(0, 0, 0, .1);
+}
+
 
 .btn_submit{
 	width: 100%;
