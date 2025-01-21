@@ -7,9 +7,12 @@
 	</title>
 	<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
 	<link rel="stylesheet" type="text/css" href="asset/css/bootstrap.min.css">
+	<link rel="stylesheet" type="text/css" href="asset/css/app_layer.css">
 	<link rel="stylesheet" type="text/css" href="asset/css/style.css">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+
 	
 </head>
 <body>
@@ -225,6 +228,7 @@
 
 	<script type="text/javascript" src="asset/js/jquery.min.js"></script>
 	<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+	<script type="text/javascript" src="asset/js/app_layer.js"></script>
 	<script type="text/javascript" src="asset/js/app.js"></script>
 
 	<?php require_once "modal_fb.php" ?>

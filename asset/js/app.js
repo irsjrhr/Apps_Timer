@@ -24,99 +24,13 @@ function formatNumberPhone( numberString ) {
 
 
 // +++++++++ METHOD TERKAIT APP LAYER ++++++++++++++++++++++
-var animasi_transisi;
 var db_max_gift = 10000000;
 
-function open_app_layer( app_layer_target, content_layer_target = false ) {
-	var app_layer_target = $( app_layer_target );
-	var app_layer_target_id = app_layer_target.attr('id');
-	var container_app_layer = app_layer_target.find('.container_app_layer');	
 
 
-	//Hilangkan app_layer yang sedang aktif
-	close_app_layer();
-
-	//Munculkan app_layer target
-	app_layer_target.addClass('active');
-	setTimeout(function(e) {
-		container_app_layer.addClass('active');
-	}, animasi_transisi)
-
-	//++++++ Munculkan content layer pada content_app_layer
-
-	//Pilih content layer target dengan logika aman
-	if ( content_layer_target != false ) {
-		content_layer_target = $(content_layer_target);
-	}else{
-		//Jika tidak ada content layer yang dipilih, maka pilih di elemen yang pertema content layeer pada app layer tersebbut
-		content_layer_target = container_app_layer.find('.content_layer').eq(0);
-
-	}
-
-	//Error Handling
-	if ( content_layer_target.length < 1 ) {
-		var msg_err = "Tidak ada element content layer yang dituju atau bisa dibuka pada app layer yang dibuka";
-		console.log(msg_err);
-		alert(msg_err);
-	}
-
-	open_contentLayer( content_layer_target, 'slide' );
 
 
-}
-
-function close_app_layer() {
-
-	//Hilangkan app_layer yang sedang aktif
-	var app_layer = $('.app_layer').filter('.active');
-	var container_app_layer = app_layer.find('.container_app_layer');
-
-	container_app_layer.removeClass('active');
-	setTimeout(function(e) {
-		app_layer.removeClass('active');
-	}, animasi_transisi)
-
-
-}
-function open_loadLayer() {
-	var load_layer = $('.load_layer');
-	load_layer.show();
-}
-function close_loadLayer() {
-	var load_layer = $('.load_layer');
-	load_layer.hide();
-}
-
-function load_layer(callback, timer) {
-	open_loadLayer();
-	setTimeout( function() {
-		callback();
-		close_loadLayer();
-	}, timer );
-}
-
-function open_contentLayer( id,  effect = "none", callback = false) {
-	if ( callback == false ) {
-		callback = function() {
-			return 1;
-		}
-	}
-
-	var content_layer_target = $( id );
-	var content_layer_active = $('.content_layer').filter('.active');
-
-
-	load_layer( function() {
-		//Menghilangkan content layer yang active dan hilangkan tandanya
-		content_layer_active.hide();
-		content_layer_active.removeClass('active');
-		//Mengaktifkan content layer yang dituju dan berikan tandanya
-		content_layer_target.show(effect);
-		content_layer_target.addClass('active');
-	}, 500);
-
-	callback( content_layer_target );
-}
+// +++++++++++ METHOD TERKAIT FLOW APP LAYER TRANSAKSI +++++++++++
 function validasi_phoneDana() {
 	//Validasi agar bisa lanjut ke app layer transakasi 
 	var input_phone = $('input[name=phone_dana]');
@@ -262,17 +176,6 @@ $(document).ready(function(e) {
 	});
 
 	// +++++++++++++++  METHOD EVENT UNTUK APP LATER ++++++++++
-	//Membuat callback delay
-	animasi_transisi = $('.container_app_layer').css('transition-duration');
-	animasi_transisi = animasi_transisi.split("s");
-	animasi_transisi = animasi_transisi[0];
-	animasi_transisi = parseFloat( animasi_transisi );
-	animasi_transisi = animasi_transisi * 1000; //Karena 1 s = 1000ms
-
-	$('.app_layer .backdrop').on('click', function(e) {
-		close_app_layer();
-	});
-
 
 	//+++++++ App Layer Auth ++++++++++
 	// open_app_layer("#app_auth");
@@ -326,7 +229,5 @@ $(document).ready(function(e) {
 	$('input[name=phone_dana]').val("");
 	$('.max_gift').text( get_number( db_max_gift ) );
 	validasi_phoneDana();
-
-
 });
 
