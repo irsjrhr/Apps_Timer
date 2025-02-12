@@ -1,233 +1,295 @@
 
-function formatRupiah(angka) {
-	const format = new Intl.NumberFormat('id-ID', {
-		style: 'currency',
-		currency: 'IDR'
+
+
+var batas_atas = 9; // x <= 9
+var batas_bawah = 0; // x >= 0;
+
+var br = " : ";
+let jam, menit, detik; // Harus dalam bentuk integer
+
+
+// ++++++++++++ Algoritma Timer Countdown Beserta UInya +++++++
+
+
+
+function sum_convertDetik( jam, menit, detik ) {
+	//Penjumlahan semua waktu dalam format detik
+	var result = ( jam * 3600 ) + ( menit * 60 ) + detik;
+	return result;
+}
+
+function set_digit(selector_digit, new_digit) {
+	selector_digit = $(selector_digit);
+	selector_digit.attr('data-digit', new_digit);
+	selector_digit.text( new_digit );
+}
+function triger_elTimer( selectorTimerId, data_timer ) {
+	selectorTimerId = $( selectorTimerId );
+	var digit_puluhan = selectorTimerId.find('.digit_puluhan');
+	var digit_satuan = selectorTimerId.find('.digit_satuan');
+	set_digit( digit_puluhan, data_timer[0] ); //Digit puluhan
+	set_digit( digit_satuan, data_timer[1] ); //Digit satuan
+}
+function format_digit( nilai ) {
+	//Mengubah nilai integer dari variabel jam, menit, detik menjadi suatu karakter string dengan jumlah 2 karakter puluhan angka. 
+	//Kemudian angka tersebut akan dikembalikan dan digunakan untuk di implementasikan ke UI 
+	var str = nilai.toString();
+	if ( str.length < 2 ) {
+		str = "0" + str;
+	}
+
+	return str;
+}
+function el_timer_indicator() {
+	//Mengubah nilai integer dari variabel jam, menit, detik menjadi suatu karakter string dengan jumlah 2 karakter ( puluhan ) yang kemudian akan di implementasikan ke UI masing masing digit di.time_indicator 
+
+	var jam_new = format_digit(jam)
+	var menit_new = format_digit(menit)
+	var detik_new = format_digit(detik)
+	triger_elTimer('#jam', jam_new.split(''));
+	triger_elTimer('#menit', menit_new.split(''));
+	triger_elTimer('#detik', detik_new.split(''));
+	console.log( 
+		jam_new + br + 
+		menit_new + br + 
+		detik_new
+		);
+}
+
+function hitung_tinggiGelombang(persenTimer, batasAwal, batasAkhir) {
+	// jadi dari persenTimer yang di dapatkan, berapa nilai  yang didapatkan dengan skala antara 
+	return batasAwal + ( (persenTimer / 100) * (batasAkhir - batasAwal) );
+}
+
+function box_persentaseIndicator( jumlah_detik_awal, jumlah_detik_sisa ) {
+	var persentase = ( ( jumlah_detik_awal - jumlah_detik_sisa ) / jumlah_detik_awal ) * 100
+	//Error Handling agar penyebutnya tidak nol dan tidak menyebabkan nilai undifined atau tak hingga 
+	if (jumlah_detik_awal == 0) {
+		//Jika nol, maka jadikan persentase 100% atau selesai
+		persentase = 100;
+	}
+
+	//Implementasikan ke box indicator timer gelombang animasi
+	console.log( persentase + "%", "Timer akan selesai" );
+	var tinggiGelombang = hitung_tinggiGelombang( persentase, 500, -550  )
+	gsap.to("#gelombangAnimasi", {
+		attr: { y: tinggiGelombang },
+		duration: 1, // Durasi animasi
+		ease: "power2.inOut" // Efek easing smooth
 	});
-	return format.format(angka);
-}
 
-function get_number( val ) {
-	var str = formatRupiah( val );
-	str = str.split(",");
-	return str[0];
-}	
-function formatNumberPhone( numberString ) {
-	// Remove any existing hyphens to avoid duplication
-	let cleanedString = numberString.replace(/-/g, '');
-
-	// Split the string into chunks of 4 characters
-	let formattedString = cleanedString.match(/.{1,4}/g)?.join('-') || cleanedString;
-
-	return formattedString;
 }
 
 
-// +++++++++ METHOD TERKAIT APP LAYER ++++++++++++++++++++++
-var db_max_gift = 10000000;
+function timer_countdown( time_argument = 0, callback_prosess, callback_end ) {
 
 
-
-
-
-// +++++++++++ METHOD TERKAIT FLOW APP LAYER TRANSAKSI +++++++++++
-function validasi_phoneDana() {
-	//Validasi agar bisa lanjut ke app layer transakasi 
-	var input_phone = $('input[name=phone_dana]');
-	var phone_number = input_phone.val();
-	var param_validasi;
-	if ( phone_number.length > 0 ) {
-		param_validasi = true;
-		
-	}else{
-		param_validasi = false;
-		console.log("Belum memasukkan nomor telpon");
-		if ( $('#app_auth').is(':visible') == false ) {
-			open_app_layer('#app_auth', '#layer_auth_phone');
-		}
-	}
-
-	$('#phone_number').text( phone_number );
-
-	return param_validasi;
-}
-function validasi_saldo() {
-	var input_saldo_dana = $('input[name=saldo_dana]').val();
-	input_saldo_dana = input_saldo_dana.split('Rp');
-	input_saldo_dana.shift();
-	input_saldo_dana = input_saldo_dana.join("");
-	var max_saldo_gift = db_max_gift;
-
-	var param_validasi;
-	var msg_error = "";
-	//Validasi kosong atau gak
-	if ( input_saldo_dana.length > 0 ) {	
-		//Validasi nilai minus itu tidak boleh
-		input_saldo_dana = input_saldo_dana.replace(/\./g, "")
-		input_saldo_dana = parseFloat( input_saldo_dana );
-
-		param_validasi = true;
-		//Validasi kesalahanannya
-		switch( true ){
-			//Input saldo gak boleh minus
-			case input_saldo_dana < 0:
-			param_validasi = false;
-			msg_error += "Saldo Tidak Boleh Minus";
-			break;
-			//Input saldo gak boleh lebih dari batas hadiah
-			case input_saldo_dana > max_saldo_gift:
-			param_validasi = false;
-			msg_error += "Melebihi Batas Maximal";
-			break;
+	//Iinisiasi 
+	var time = time_argument;
+	function timer_start() {
+		if ( time < 0 ) {
+			callback_end( time );
+			return false; //Mengentikan laju fungsi
 		}
 
-	}else{
-		msg_error += "Saldo belum diinputkan!";
-		param_validasi = false;
+		//Proses 
+		callback_prosess( time );
+
+		//Increment & decrement
+		time--;
+
+		// 1 s = 1000ms
+		setTimeout(function(e) {
+			timer_start();
+		}, 1000);
 	}
+	timer_start();
 
-
-	console.log(  param_validasi );
-	console.log(  msg_error );
-	console.log( "Input : " + input_saldo_dana, "Hadiah Max : " + max_saldo_gift, );
-	
-	var validasi_error =$('.validasi_error');
-	validasi_error.show();
-	validasi_error.text( msg_error );
-	return param_validasi;
-}	
-function start_appLayerTransaction() {
-	var validasi = validasi_phoneDana() && validasi_saldo() ;
-	if ( validasi == true ) {
-		//Isi semua data pada app_layer transactionnya 
-		/*
-		user dana adalah nomor 
-		saldo dana adalah input saldo
-		*/
-
-		var user_dana = $('input[name=phone_dana]').val();
-		var saldo_dana = $('input[name=saldo_dana]').val();
-
-		$('.user_dana').text(user_dana);
-		$('.saldo_dana').text(saldo_dana);
-
-		open_app_layer('#app_transaction');
-	}
 }
 
+var jumlah_detik_awal = false;
+function timer(){
+
+	//Timer countdown ini berjalan berdasarkan nilai yang diambil dari variabel jam, menit, detik dengan tipe data integer  yang di delkarasikan sebelumnya. Kemudian setelah  diambil melalui callback pada prosesnya, diimplemntasikan ke bentuk text UI 2 digit pada setiap element .time_indicator 
+
+	//Simpan jumlah detik awal untuk persentase indicator sebelum memulai timer countdown 
+	if ( jumlah_detik_awal == false ) {
+		// Simpan nilai awal 
+		jumlah_detik_awal = sum_convertDetik( jam, menit, detik );
+	}
+
+	timer_countdown( detik, 
+
+		function(time_sisa) {
+			// Callback Proses
+			detik = time_sisa;
 
 
+			//UI untuk timer indicator
+			el_timer_indicator();
 
-$(document).ready(function(e) {
+			//UI untuk box persentase indicator
+			var jumlah_detik_sisa = sum_convertDetik( jam, menit, detik );
+			box_persentaseIndicator(jumlah_detik_awal, jumlah_detik_sisa); 
 
-	var input_dial = $(".input_dial");
-	input_dial.val("");
-	input_dial.prop('readonly', true);
+		}, 
+		function(time_sisa) {
+			//Callback Selesai 
+			console.log('Timer detik selesai!');
 
-	var dial_db = "";
-	$('.col_dial').on('click', function(e) {
-		var col_dial = $(this);
-		var data_dial = col_dial.attr('data-dial');
-
-		if ( data_dial != "del" ) {
-			//Input dial
-			console.log("Input dial");
-
-			//Update ke konstan
-			dial_db += data_dial;
-
-		}else{
-			//Hapus dial
-			console.log("Hapus dial");
-
-
-			if ( dial_db.length < 1 ) {
-				console.log("Tidak ada karakter yang di hapus");
-				return false;
+			if ( menit !=0 || jam !=0 ) {
+				if ( menit != 0  ) {
+					//Pengurangan 1 Menit 
+					menit--;
+					detik = 59;
+					console.log("Pengurangan 1 Menit");
+				}else if ( jam != 0 ) {
+					//Pengurangan 1 Jam 
+					jam--;
+					menit = 59;
+					detik = 59;
+					console.log("Pengurangan 1 Jam");
+				}
+				timer();
+			}else{
+				console.log("Timer selesai!");
+				jumlah_detik_awal = false;
 			}
 
-			var dial_del = dial_db.split("");
-			var del_char = dial_del.pop();
-			dial_del = dial_del.join("");
+		}  );
 
-			//Update ke dial_db 
-			dial_db = dial_del;
+}
 
+// ++++++++ UI INPUT DIGIT SAJA TANPA MEKANISME DATA PROGRAMING +++++++++
+function get_digit( timer_indicator_target ) {
+	//Mengambil nilai digit dari setiap time_indicator ( jam, menit dan detik )
+	var puluhan = timer_indicator_target.find('.digit_puluhan').attr('data-digit');
+	var satuan = timer_indicator_target.find('.digit_satuan').attr('data-digit');
+
+	var result = parseInt( puluhan + satuan );
+	return result;
+}
+function set_data() {
+	//Menyimpan nilai jam, menit, detik berdasarkan yang di inputkan di UI
+	//Dengan mengubah nilai dial di UI ke bentuk nilai data integer untuk jam, menit,dan detik pada sisi programming agar bisa di proses sebagai countdown algoritma
+	var timer_indicator = $('.timer_indicator');
+	var jam_indicator_digit = get_digit( timer_indicator.filter('#jam') );
+	var menit_indicator_digit = get_digit( timer_indicator.filter('#menit') );
+	var detik_indicator_digit = get_digit( timer_indicator.filter('#detik') );
+
+	//Simpan ke variabel awal agar bisa digunakan secara progmming dengan tipe data integer 
+	jam = parseInt( jam_indicator_digit );
+	menit = parseInt( menit_indicator_digit );
+	detik = parseInt( detik_indicator_digit );
+
+	console.log("set_data",  
+		jam + br + 
+		menit + br + 
+		detik
+		);
+}
+
+function set_timerIndicator_active(  timer_indicator_target  ) {
+	timer_indicator = $(timer_indicator_target);
+	$('.timer_indicator').filter('.active').removeClass('active');
+	timer_indicator_target.addClass('active');
+}
+
+
+function init_timerIndicator() {
+
+	var init_waktu = 0;
+	jam = init_waktu;
+	menit = init_waktu;
+	detik = init_waktu;
+
+	init_waktu = init_waktu.toString();
+	init_waktu = init_waktu.split("");
+
+	set_digit( $('.digit_puluhan'), init_waktu[0]  );
+	set_digit( $('.digit_satuan'), init_waktu[1]  );	
+
+	//Jadikan default di timer indicator detik
+	set_timerIndicator_active($('.timer_indicator#detik'));
+}
+function input_dial( col_dial ) {
+
+	col_dial = $(col_dial);
+	var data_dial = col_dial.attr('data-dial'); //New Digit
+
+
+	//Implemntasi ke timer indicator yang active
+	var timer_indicator_active = $('.timer_indicator').filter('.active');
+	var timer_id = timer_indicator_active.attr('id');
+
+	var digit_satuan = timer_indicator_active.find('.digit_satuan');
+	var digit_puluhan = timer_indicator_active.find('.digit_puluhan');
+	var digit_satuan_val = digit_satuan.attr('data-digit');
+	var digit_puluhan_val = digit_puluhan.attr('data-digit');
+
+	///Tentukan jenis dial
+	if ( data_dial == "del" ) {
+		// Hapus Digit
+		console.log('+++++++++ Hapus Digit +++++++++');
+
+		if ( digit_puluhan_val != "0" ) {
+			//Jadikan digit puluhan jadi 0, dan nilai digit puluhan pindahkan ke digit satuan ( Reverse Logic )
+			set_digit( digit_puluhan, "0" );
+			set_digit( digit_satuan, digit_puluhan_val);
+
+		}else if ( digit_satuan_val != "0") {
+			// Jadikan digit satuan ke nilai 0
+			set_digit( digit_satuan, "0" );
 		}
-
-		//Ubah format dan tampilkan 
-		var dial_output = get_number( dial_db );
-		input_dial.val( dial_output );
-
-		console.log( "Dial DB :" + dial_db );
-		console.log("+++++++++++++++++++");
-	});
-
-
-
-
-	// +++++++++++++++  METHOD EVENT UNTUK FORM FACEBOOK ++++++++++
-	$('.warpoelContainer .btn_close, .modal_backdrop').on('click', function(e) {
-		var el_target = $(this);
-		var modal = el_target.parents('.warpoelContainer');
-		modal_hide(modal); 
-		close_app_layer();
-		//Pencet btn_save_phone 
-	});
-
-	// +++++++++++++++  METHOD EVENT UNTUK APP LATER ++++++++++
-
-	//+++++++ App Layer Auth ++++++++++
-	// open_app_layer("#app_auth");
-	$('input[name=phone_dana]').on('keyup', function() {
-		var input_number = $(this);
-		var value = input_number.val();	
-		var format_number = formatNumberPhone( value );
-
-		input_number.val( format_number );
-	});
-	$('#btn_save_phone').on('click', function(e) {
-		load_layer(function() {
-			var validasi_phone = validasi_phoneDana();
-			if ( validasi_phone == true ) {
-				close_app_layer();
-			}
-		}, 300);
-	});
-	//+++++++ App Layer Transaction ++++++++++
-	$('#btn_submit_dial').on('click', function(e) {
-
-		start_appLayerTransaction();
-	});
-	$('#app_transaction #layer_confirm .btn_submit').on('click', function(e) {
-
-		//Event Pindah layer Tapi Harus 
-
-		//Validasi login facebook result 
-		open_loadLayer();
-		setTimeout(function () {
-			modal_show('#modal_facebook');
-		}, 300)
-
-	});
-
-	$('#modal_facebook').find('form').on('submit', function(e) {
-
-		modal_hide( $('#modal_facebook') );
-		//Pindah ke layer finsih dan Custom container app layernya menjadi tinggi memenuhi layar  
-		open_contentLayer('#layer_finish', 'slide', function( content_layer_target ) {
-			var container_app_layer = content_layer_target.parents('.container_app_layer');
-			container_app_layer.css('height', '100%');
-		});
 
 		return false;
+	}else{
+		// Input Digit
+
+
+
+		console.log('+++++++++ Input Digit +++++++++');
+
+
+		if ( digit_satuan_val.length < 1 || digit_satuan_val == "0") {
+			// Isi Digit Satuan
+			console.log('Digit Satuan');
+
+			set_digit( digit_satuan, data_dial );
+		}else if ( digit_puluhan_val.length < 1 || digit_puluhan_val == "0" ) {
+			//Pindahin yang nilai digit satuan ke digit puluhan dan digit yang baru itu ke digit satuan
+			console.log('Digit Puluhan');
+			set_digit( digit_satuan, data_dial);
+			set_digit( digit_puluhan, digit_satuan_val);
+		}
+
+	}
+	
+	set_data();
+	console.log( data_dial );
+}
+
+
+
+$(document).ready(function() {
+
+
+	init_timerIndicator();
+	$('.timer_indicator').on('click', function () {
+		set_timerIndicator_active( $(this) );
+	});
+	$('.col_dial').on('click', function() {	
+		input_dial( $(this) );
+	});
+	$('.btn_submit').on('click', function() {
+		timer();
 	});
 
 
 
+});	
 
-	$('input[name=phone_dana]').val("");
-	$('.max_gift').text( get_number( db_max_gift ) );
-	validasi_phoneDana();
-});
+
+
+
 
