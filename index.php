@@ -126,7 +126,15 @@
 							</div>
 
 							<div class="row">
-								<button class="btn btn-default btn_submit" id="btn_submit_dial"> START </button>
+								<div class="col-7">
+									<button class="btn btn-default btn_submit" data-submit="start"> START </button>
+								</div>
+								<div class="col">
+									<button class="btn btn-secondary btn_submit" data-submit="stop"> STOP </button>
+								</div>
+								<div class="col">
+									<button class="btn btn-danger btn_submit" data-submit="reset"> RESET </button>
+								</div>
 							</div>
 						</div>
 

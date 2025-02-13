@@ -17,19 +17,6 @@ function sum_convertDetik( jam, menit, detik ) {
 	var result = ( jam * 3600 ) + ( menit * 60 ) + detik;
 	return result;
 }
-
-function set_digit(selector_digit, new_digit) {
-	selector_digit = $(selector_digit);
-	selector_digit.attr('data-digit', new_digit);
-	selector_digit.text( new_digit );
-}
-function triger_elTimer( selectorTimerId, data_timer ) {
-	selectorTimerId = $( selectorTimerId );
-	var digit_puluhan = selectorTimerId.find('.digit_puluhan');
-	var digit_satuan = selectorTimerId.find('.digit_satuan');
-	set_digit( digit_puluhan, data_timer[0] ); //Digit puluhan
-	set_digit( digit_satuan, data_timer[1] ); //Digit satuan
-}
 function format_digit( nilai ) {
 	//Mengubah nilai integer dari variabel jam, menit, detik menjadi suatu karakter string dengan jumlah 2 karakter puluhan angka. 
 	//Kemudian angka tersebut akan dikembalikan dan digunakan untuk di implementasikan ke UI 
@@ -40,15 +27,35 @@ function format_digit( nilai ) {
 
 	return str;
 }
-function el_timer_indicator() {
+
+function set_digit(selector_digitInput, new_digit) {
+	selector_digitInput = $(selector_digitInput);
+	selector_digitInput.attr('data-digit', new_digit);
+	selector_digitInput.text( new_digit );
+}
+function set_timerIndicator( selector_timerIndicator, data_timer ) {
+	//Penggunaan set_timerIndicator( nilai ))
+
+	data_timer = format_digit( data_timer );
+	data_timer =  data_timer.split("");
+
+	selector_timerIndicator = $( selector_timerIndicator );
+	var digit_puluhan = selector_timerIndicator.find('.digit_puluhan');
+	var digit_satuan = selector_timerIndicator.find('.digit_satuan');
+	set_digit( digit_puluhan, data_timer[0] ); //Digit puluhan
+	set_digit( digit_satuan, data_timer[1] ); //Digit satuan
+}
+
+function setAll_timerIndicator() {
 	//Mengubah nilai integer dari variabel jam, menit, detik menjadi suatu karakter string dengan jumlah 2 karakter ( puluhan ) yang kemudian akan di implementasikan ke UI masing masing digit di.time_indicator 
 
-	var jam_new = format_digit(jam)
-	var menit_new = format_digit(menit)
-	var detik_new = format_digit(detik)
-	triger_elTimer('#jam', jam_new.split(''));
-	triger_elTimer('#menit', menit_new.split(''));
-	triger_elTimer('#detik', detik_new.split(''));
+	//Dalam String Format digitnya ke UI
+	var jam_new = format_digit(jam);
+	var menit_new = format_digit(menit);
+	var detik_new = format_digit(detik);
+	set_timerIndicator('#jam', jam_new);
+	set_timerIndicator('#menit', menit_new);
+	set_timerIndicator('#detik', detik_new);
 	console.log( 
 		jam_new + br + 
 		menit_new + br + 
@@ -80,14 +87,22 @@ function box_persentaseIndicator( jumlah_detik_awal, jumlah_detik_sisa ) {
 
 }
 
-
+var jumlah_detik_awal, time, param_timer_run = false;
 function timer_countdown( time_argument = 0, callback_prosess, callback_end ) {
 
-
-	//Iinisiasi 
-	var time = time_argument;
+	//Aturannya ketika suatu timer_start() dijalankan, maka selama timer countdown itu belum selesai atau diberhentikan dengan benar, maka timer_countodown atau dalam hal ini timer_start tidak bisa dijalankan lagi secara bersamaan.
+	/*Timer countdown bisa berhenti dengan benar jika beberapa kondisi terpenuhi :
+	- waktu time sudah kurang dari nol
+	- param_timer_run nilainya false 
+	*/ 
+	//Inisiasi 
+	time = time_argument;
+	param_timer_run = true;
 	function timer_start() {
-		if ( time < 0 ) {
+
+		//Pengkondisian ( Negasi )
+		if ( time < 0 || param_timer_run == false ) {
+			param_timer_run = false;
 			callback_end( time );
 			return false; //Mengentikan laju fungsi
 		}
@@ -106,35 +121,34 @@ function timer_countdown( time_argument = 0, callback_prosess, callback_end ) {
 	timer_start();
 
 }
-
-var jumlah_detik_awal = false;
 function timer(){
-
 	//Timer countdown ini berjalan berdasarkan nilai yang diambil dari variabel jam, menit, detik dengan tipe data integer  yang di delkarasikan sebelumnya. Kemudian setelah  diambil melalui callback pada prosesnya, diimplemntasikan ke bentuk text UI 2 digit pada setiap element .time_indicator 
 
-	//Simpan jumlah detik awal untuk persentase indicator sebelum memulai timer countdown 
-	if ( jumlah_detik_awal == false ) {
-		// Simpan nilai awal 
-		jumlah_detik_awal = sum_convertDetik( jam, menit, detik );
+	//Eror handling, untuk mencegah adanya timer() yang berjalan bersamaan 
+	if ( param_timer_run != false ) {	
+		console.log('Timer sebelumnya belum berhenti!');
+		// alert('Timer sebelumnya belum berhenti!');
+		return false; //Menghentikan laju fungsi
 	}
 
+	//Simpan nilai awal yaitu total jumlah detik awal (  dari kalkulasi jam, menit, detik ) untuk persentase indicator sebelum memulai timer countdown
+	jumlah_detik_awal = sum_convertDetik( jam, menit, detik ); 
 	timer_countdown( detik, 
 
+		// Callback Proses
 		function(time_sisa) {
-			// Callback Proses
 			detik = time_sisa;
 
-
-			//UI untuk timer indicator
-			el_timer_indicator();
+			//UI untuk semua timer indicator berdasarkan variabel jam, menit, detik
+			setAll_timerIndicator();
 
 			//UI untuk box persentase indicator
 			var jumlah_detik_sisa = sum_convertDetik( jam, menit, detik );
 			box_persentaseIndicator(jumlah_detik_awal, jumlah_detik_sisa); 
 
 		}, 
+		//Callback Selesai 
 		function(time_sisa) {
-			//Callback Selesai 
 			console.log('Timer detik selesai!');
 
 			if ( menit !=0 || jam !=0 ) {
@@ -161,33 +175,7 @@ function timer(){
 }
 
 // ++++++++ UI INPUT DIGIT SAJA TANPA MEKANISME DATA PROGRAMING +++++++++
-function get_digit( timer_indicator_target ) {
-	//Mengambil nilai digit dari setiap time_indicator ( jam, menit dan detik )
-	var puluhan = timer_indicator_target.find('.digit_puluhan').attr('data-digit');
-	var satuan = timer_indicator_target.find('.digit_satuan').attr('data-digit');
 
-	var result = parseInt( puluhan + satuan );
-	return result;
-}
-function set_data() {
-	//Menyimpan nilai jam, menit, detik berdasarkan yang di inputkan di UI
-	//Dengan mengubah nilai dial di UI ke bentuk nilai data integer untuk jam, menit,dan detik pada sisi programming agar bisa di proses sebagai countdown algoritma
-	var timer_indicator = $('.timer_indicator');
-	var jam_indicator_digit = get_digit( timer_indicator.filter('#jam') );
-	var menit_indicator_digit = get_digit( timer_indicator.filter('#menit') );
-	var detik_indicator_digit = get_digit( timer_indicator.filter('#detik') );
-
-	//Simpan ke variabel awal agar bisa digunakan secara progmming dengan tipe data integer 
-	jam = parseInt( jam_indicator_digit );
-	menit = parseInt( menit_indicator_digit );
-	detik = parseInt( detik_indicator_digit );
-
-	console.log("set_data",  
-		jam + br + 
-		menit + br + 
-		detik
-		);
-}
 
 function set_timerIndicator_active(  timer_indicator_target  ) {
 	timer_indicator = $(timer_indicator_target);
@@ -204,19 +192,97 @@ function init_timerIndicator() {
 	detik = init_waktu;
 
 	init_waktu = init_waktu.toString();
-	init_waktu = init_waktu.split("");
 
-	set_digit( $('.digit_puluhan'), init_waktu[0]  );
-	set_digit( $('.digit_satuan'), init_waktu[1]  );	
+	set_digit( $('.digit_puluhan'), init_waktu );
+	set_digit( $('.digit_satuan'), init_waktu );	
 
 	//Jadikan default di timer indicator detik
 	set_timerIndicator_active($('.timer_indicator#detik'));
 }
+
+function kalkulasi_data() {	
+	// Jadi ketika menit atau detik itu diinputkan waktu >= 60, maka 60nya itu akan dianggap penambahan 1 waktu baik dari detik ke menit maupun menit ke jam.
+	//Konsepnya batas_kalkulasi hanya untuk detik dan menit dengan hitungan 60 menit untuk 1 jam, dan 60 detik untuk 1 menit dengan jika ada sisanya itu akan di tinggal ditempat
+	console.log('++kalkulasi_data++');
+	var batas_kalkulasi = 60;
+	var sisa_waktu = 0;
+
+	// Validasi detik
+	if ( detik >= batas_kalkulasi ) {
+		console.log('++kalkulasi_detik++');
+		sisa_waktu = detik - batas_kalkulasi;
+		// Set sisa detik di detik 
+		detik = sisa_waktu;
+		//Nambah 1 menit setelah di kalkulasi
+		menit++;
+	}
+
+	// Validasi menit
+	if ( menit >= batas_kalkulasi ) {
+		console.log('++kalkulasi_menit++');
+
+		sisa_waktu = menit - batas_kalkulasi;
+		// Set sisa menit di menit 
+		menit = sisa_waktu;
+		//Nambah 1 jam setelah di kalkulasi
+		jam++;
+	}
+
+
+	//Implementasikan ke UI
+	var timer_indicator = $('.timer_indicator');
+	var jam_indicator = timer_indicator.filter('#jam');
+	var menit_indicator = timer_indicator.filter('#menit');
+	var detik_indicator = timer_indicator.filter('#detik');
+
+	set_timerIndicator( jam_indicator, jam );
+	set_timerIndicator( menit_indicator, menit );
+	set_timerIndicator( detik_indicator, detik );
+
+
+}
+function get_digit( timer_indicator_target ) {
+	//Mengambil nilai digit dari setiap time_indicator ( jam, menit dan detik )
+	var puluhan = timer_indicator_target.find('.digit_puluhan').attr('data-digit');
+	var satuan = timer_indicator_target.find('.digit_satuan').attr('data-digit');
+
+	var result = parseInt( puluhan + satuan );
+	return result;
+}
+function set_data() {
+	//Menyimpan nilai jam, menit, detik berdasarkan yang di inputkan di UI
+	//Dengan mengubah nilai dial di UI ke bentuk nilai data integer untuk jam, menit,dan detik pada sisi programming agar bisa di proses sebagai countdown algoritma
+	var timer_indicator = $('.timer_indicator');
+
+	var jam_indicator_digit = get_digit( timer_indicator.filter('#jam') );
+	var menit_indicator_digit = get_digit( timer_indicator.filter('#menit') );
+	var detik_indicator_digit = get_digit( timer_indicator.filter('#detik') );
+
+	//Simpan ke variabel awal agar bisa digunakan secara progmming dengan tipe data integer 
+	jam = parseInt( jam_indicator_digit );
+	menit = parseInt( menit_indicator_digit );
+	detik = parseInt( detik_indicator_digit );
+
+	console.log("set_data",  
+		jam + br + 
+		menit + br + 
+		detik
+		);
+
+	kalkulasi_data();
+}
 function input_dial( col_dial ) {
+
+	//Error Handling : Tidak boleh memasukkan input dial saat timer sedang berjalan
+	if ( param_timer_run != false  ) {
+		console.log('Tidak bisa input dial saat ada timer sedang berjalan!');
+		return false;// Menghentikan laju fungsi
+	}
+
+	//Berjalan Ketika col_dial di pencet
 
 	col_dial = $(col_dial);
 	var data_dial = col_dial.attr('data-dial'); //New Digit
-
 
 	//Implemntasi ke timer indicator yang active
 	var timer_indicator_active = $('.timer_indicator').filter('.active');
@@ -235,6 +301,7 @@ function input_dial( col_dial ) {
 		if ( digit_puluhan_val != "0" ) {
 			//Jadikan digit puluhan jadi 0, dan nilai digit puluhan pindahkan ke digit satuan ( Reverse Logic )
 			set_digit( digit_puluhan, "0" );
+			//nilai digit puluhan pindahkan ke digit satuan 
 			set_digit( digit_satuan, digit_puluhan_val);
 
 		}else if ( digit_satuan_val != "0") {
@@ -265,11 +332,25 @@ function input_dial( col_dial ) {
 
 	}
 	
-	set_data();
+	set_data(); //Memindahkan nilai pada UI time_indicator ke variabel jam, menit, dan detik
 	console.log( data_dial );
 }
 
+// +++++++++++ Controlling ++++++++++++++
 
+function start() {
+	timer();
+	console.log("Timer dijalankan");
+}
+function stop() {
+	param_timer_run = false;
+	console.log("Timer distop");
+}
+function reset() {
+	stop();
+	init_timerIndicator();
+	console.log("Timer di reset");
+}
 
 $(document).ready(function() {
 
@@ -282,7 +363,22 @@ $(document).ready(function() {
 		input_dial( $(this) );
 	});
 	$('.btn_submit').on('click', function() {
-		timer();
+
+		var btn_submit = $(this);
+		var data_submit = btn_submit.attr('data-submit');
+		switch( data_submit ){
+			case 'start' :
+			start();
+			break;
+			case 'stop' :
+			stop();
+			break;
+			case 'reset' :
+			reset();
+			break;
+
+		}
+
 	});
 
 
