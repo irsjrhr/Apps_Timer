@@ -19,7 +19,7 @@
 
 
 	<div class="container-fluid">
-		<div class="row justify-content-center">
+		<div class="row justify-content-center" style="height: 100%;">
 			<div class="col-sm col_indicator" style="">
 				<div class="box_indicatorTimer">
 
@@ -41,9 +41,9 @@
 
 			</div>
 			<!-- Col App -->
-			<div class="col_app" style="width: 50%;">
+			<div class="col-sm col_app" style="position: relative;">
 				<!-- Container App -->
-				<div class="container_app" style="position: fixed;width: inherit;height: 100%;transform: none;left: unset;">
+				<div class="container_app" style="position: absolute;width: 100%;height: 600px;">
 					<!-- Box Detail -->
 					<div class="box_detail">
 
