@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>
-		Dana - Gift
+		Apps Timer
 	</title>
 	<link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
 	<link rel="stylesheet" type="text/css" href="asset/css/bootstrap.min.css">
