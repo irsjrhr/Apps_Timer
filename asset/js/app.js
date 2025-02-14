@@ -342,10 +342,12 @@ function input_dial( col_dial ) {
 
 function start() {
 	timer();
+	$('.col_indicator').show();
 	console.log("Timer dijalankan");
 }
 function stop() {
 	param_timer_run = false;
+	$('.col_indicator').hide();
 	console.log("Timer distop");
 }
 function reset() {
