@@ -63,9 +63,11 @@ function setAll_timerIndicator() {
 		);
 }
 
-function hitung_tinggiGelombang(persenTimer, batasAwal, batasAkhir) {
-	// jadi dari persenTimer yang di dapatkan, berapa nilai  yang didapatkan dengan skala antara 
-	return batasAwal + ( (persenTimer / 100) * (batasAkhir - batasAwal) );
+function hitung_tinggiGelombang(persenTimer ) {
+	var y_dasar = 500;
+	var y_tinggi = -500;
+	// ja yang di dapatkan, berapa nilai  yang didapatkan dengan skala antara y_dasar dan y_tinggi 
+	return y_dasar + ( (persenTimer / 100) * (y_tinggi  - y_dasar) );
 }
 
 function box_persentaseIndicator( jumlah_detik_awal, jumlah_detik_sisa ) {
@@ -78,7 +80,7 @@ function box_persentaseIndicator( jumlah_detik_awal, jumlah_detik_sisa ) {
 
 	//Implementasikan ke box indicator timer gelombang animasi
 	console.log( persentase + "%", "Timer akan selesai" );
-	var tinggiGelombang = hitung_tinggiGelombang( persentase, 500, -550  )
+	var tinggiGelombang = hitung_tinggiGelombang( persentase  )
 	gsap.to("#gelombangAnimasi", {
 		attr: { y: tinggiGelombang },
 		duration: 1, // Durasi animasi
@@ -167,7 +169,6 @@ function timer(){
 				timer();
 			}else{
 				console.log("Timer selesai!");
-				jumlah_detik_awal = false;
 			}
 
 		}  );
@@ -195,6 +196,7 @@ function init_timerIndicator() {
 
 	set_digit( $('.digit_puluhan'), init_waktu );
 	set_digit( $('.digit_satuan'), init_waktu );	
+
 
 	//Jadikan default di timer indicator detik
 	set_timerIndicator_active($('.timer_indicator#detik'));
@@ -349,6 +351,7 @@ function stop() {
 function reset() {
 	stop();
 	init_timerIndicator();
+	box_persentaseIndicator( 1, 1 );
 	console.log("Timer di reset");
 }
 
